@@ -69,7 +69,7 @@ Follow these steps **exactly** to set up the application:
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/amazingAlbertJohn/csc-electron.git
+git clone https://github.com/markjamisola/csc-electron.git
 cd csc-electron
 ```
 
