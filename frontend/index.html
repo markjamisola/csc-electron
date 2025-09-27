@@ -1,0 +1,195 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Processing App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+  </head>
+  <body class="bg-gray-950 min-h-screen flex items-center justify-center p-6">
+    <div class="bg-gray-900 rounded-2xl shadow-2xl p-8 w-full max-w-6xl">
+      
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold text-green-400 flex items-center justify-center gap-2">
+          <i data-feather="cpu"></i> Image Processing App
+        </h1>
+        <p class="text-gray-400 mt-1 text-sm">Upload, process, and manage images in batches</p>
+      </div>
+
+      <!-- Main Buttons -->
+      <div id="mainButtons" class="mb-6 flex gap-3">
+        <button onclick="showBatchModal()" 
+          class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 hover:scale-105 transition text-sm">
+          <i data-feather="folder-plus"></i> New Batch
+        </button>
+        <a href="savedbatches.html" 
+          class="px-4 py-2 bg-yellow-600 text-white rounded-lg shadow hover:bg-yellow-700 hover:scale-105 transition flex items-center gap-2 text-sm">
+          <i data-feather="folder"></i> Show Saved Batches
+        </a>
+      </div>
+
+      <!-- Batch Creation Modal -->
+      <div id="batchModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg w-full max-w-sm">
+          <h2 class="text-lg font-bold text-green-400 mb-3">Create New Batch</h2>
+          <div class="mb-3">
+            <label class="block text-gray-300 mb-1 text-sm" for="modalBatchName">Batch Name</label>
+            <input id="modalBatchName" type="text" 
+              class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-gray-200 text-sm" />
+          </div>
+          <div class="flex justify-end gap-3">
+            <button onclick="hideBatchModal()" 
+              class="px-3 py-1.5 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">
+              Cancel
+            </button>
+            <button onclick="startBatch()" 
+              class="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
+              Create
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch Actions -->
+      <div id="batchIdSection" class="mb-4 hidden">
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-gray-300">Batch:</span>
+          <span id="batchNameLabel" class="text-green-400 font-semibold"></span>
+        </div>
+        <div class="mt-3 flex gap-2">
+          <button onclick="cancelBatch()" 
+            class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm">
+            Cancel
+          </button>
+          <button onclick="saveBatch()" 
+            class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+            Save
+          </button>
+        </div>
+      </div>
+
+      <!-- Upload & Filter Section -->
+      <div id="imageUploadSection" class="mb-6 hidden">
+        <div class="flex flex-col md:flex-row items-center gap-3 mb-6">
+          <!-- File Input -->
+          <input type="file" id="fileInput" multiple
+            class="flex-1 text-sm text-gray-200 border border-gray-700 rounded-md cursor-pointer bg-gray-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400 hover:border-green-400 hover:bg-gray-700" />
+
+          <!-- Filter Dropdown -->
+          <select id="operation"
+            class="px-3 py-2 text-sm border border-gray-700 rounded-md bg-gray-800 text-gray-200 focus:ring-2 focus:ring-green-400 hover:border-green-400 hover:bg-gray-700">
+            <option value="grayscale">Grayscale</option>
+            <option value="canny">Edge Detection</option>
+            <option value="blur">Blur</option>
+            <option value="sharpen">Sharpen</option>
+            <option value="sepia">Sepia</option>
+            <option value="invert">Invert Colors</option>
+            <option value="brightness">Brightness</option>
+            <option value="contrast">Contrast</option>
+            <option value="saturation">Saturation</option>
+            <option value="emboss">Emboss</option>
+          </select>
+
+          <!-- Process Button -->
+          <button onclick="processImage()" 
+            class="px-4 py-2 bg-green-600 text-white rounded-md shadow hover:bg-green-700 hover:scale-105 transition text-sm">
+            Process
+          </button>
+        </div>
+
+        <!-- Image Preview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="text-center">
+            <h2 class="text-base font-semibold text-gray-300 mb-2">Original</h2>
+            <div id="original" class="border border-gray-700 rounded-lg p-2 bg-gray-800"></div>
+          </div>
+          <div class="text-center">
+            <h2 class="text-base font-semibold text-gray-300 mb-2">Processed</h2>
+            <div id="processed" class="border border-gray-700 rounded-lg p-2 bg-gray-800"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="renderer.js"></script>
+    <script>
+      feather.replace();
+      let savedBatchId = null;
+
+      function showBatchModal() {
+        document.getElementById("batchModal").classList.remove("hidden");
+      }
+
+      function hideBatchModal() {
+        document.getElementById("batchModal").classList.add("hidden");
+      }
+
+      async function startBatch() {
+        const name = document.getElementById("modalBatchName").value.trim();
+        if (!name) {
+          alert("Batch name is required.");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("name", name);
+
+        const response = await fetch("http://127.0.0.1:8000/batches/", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          alert("Failed to create batch.");
+          return;
+        }
+
+        const data = await response.json();
+        savedBatchId = data.id;
+
+        document.getElementById("batchNameLabel").textContent = name;
+        document.getElementById("batchIdSection").classList.remove("hidden");
+        document.getElementById("imageUploadSection").classList.remove("hidden");
+        document.getElementById("mainButtons").classList.add("hidden");
+
+        hideBatchModal();
+      }
+
+      function cancelBatch() {
+        savedBatchId = null;
+        document.getElementById("batchIdSection").classList.add("hidden");
+        document.getElementById("imageUploadSection").classList.add("hidden");
+        document.getElementById("original").innerHTML = "";
+        document.getElementById("processed").innerHTML = "";
+        document.getElementById("mainButtons").classList.remove("hidden");
+      }
+
+      async function saveBatch() {
+        if (!savedBatchId) {
+          alert("No batch to save.");
+          return;
+        }
+
+        const response = await fetch(`http://127.0.0.1:8000/batches/${savedBatchId}/save`, {
+          method: "POST",
+        });
+
+        if (!response.ok) {
+          alert("Failed to save batch.");
+          return;
+        }
+
+        alert("Batch saved successfully!");
+        cancelBatch();
+      }
+
+      function getSelectedBatchId() {
+        return savedBatchId;
+      }
+    </script>
+  </body>
+</html>
+```
