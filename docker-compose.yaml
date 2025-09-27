@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: "09282402911"
       POSTGRES_DB: imagedb
     ports:
       - "5433:5432"
