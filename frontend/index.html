@@ -6,8 +6,34 @@
     <title>Image Processing Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      .animate-slide-in {
+        animation: slideIn 0.3s ease-out;
+      }
+    </style>
   </head>
   <body class="bg-gray-900 min-h-screen text-white">
+    <!-- Success Notification Toast -->
+    <div id="successToast" class="fixed top-4 right-4 z-50 hidden">
+      <div class="bg-green-600 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 animate-slide-in">
+        <i data-feather="check-circle" class="w-6 h-6"></i>
+        <div>
+          <p class="font-semibold">Download Successful!</p>
+          <p class="text-sm text-green-100" id="toastMessage">Image downloaded successfully</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Header -->
     <div class="bg-gray-800 shadow-lg">
       <div class="max-w-7xl mx-auto px-6 py-4">
@@ -169,6 +195,50 @@
                       <option value="add_polygon">Add Polygon</option>
                       <option value="add_text">Add Text</option>
                     </optgroup>
+                    
+                    <optgroup label="Transformations">
+                      <option value="translate_right">Translate Right</option>
+                      <option value="translate_down">Translate Down</option>
+                      <option value="rotate_45">Rotate 45°</option>
+                      <option value="rotate_90">Rotate 90°</option>
+                      <option value="flip_horizontal">Flip Horizontal</option>
+                      <option value="flip_vertical">Flip Vertical</option>
+                    </optgroup>
+                    
+                    <optgroup label="Scaling & Cropping">
+                      <option value="resize_50">Resize to 50%</option>
+                      <option value="resize_200">Resize to 200%</option>
+                      <option value="crop_center">Crop Center 50%</option>
+                    </optgroup>
+                    
+                    <optgroup label="Arithmetic Operations">
+                      <option value="brighten">Brighten (+50)</option>
+                      <option value="darken">Darken (-50)</option>
+                      <option value="contrast">Increase Contrast</option>
+                      <option value="bitwise_not">Invert Colors</option>
+                    </optgroup>
+                    
+                    <optgroup label="Blurring & Sharpening">
+                      <option value="gaussian_blur">Gaussian Blur</option>
+                      <option value="median_blur">Median Blur</option>
+                      <option value="bilateral_filter">Bilateral Filter</option>
+                      <option value="sharpen">Sharpen</option>
+                    </optgroup>
+                    
+                    <optgroup label="Thresholding">
+                      <option value="threshold_binary">Binary Threshold</option>
+                      <option value="threshold_otsu">Otsu's Threshold</option>
+                      <option value="adaptive_threshold">Adaptive Threshold</option>
+                    </optgroup>
+                    
+                    <optgroup label="Morphological & Edge Detection">
+                      <option value="dilate">Dilation</option>
+                      <option value="erode">Erosion</option>
+                      <option value="morphological_gradient">Morphological Gradient</option>
+                      <option value="sobel_x">Sobel Edge (X)</option>
+                      <option value="sobel_y">Sobel Edge (Y)</option>
+                      <option value="laplacian">Laplacian Edge</option>
+                    </optgroup>
                   </select>
                   <div id="filterInfo" class="text-xs text-gray-400 mb-3 p-2 bg-gray-600 rounded">
                     <strong>Selected:</strong> Select a filter to see description.
@@ -221,6 +291,40 @@
       </div>
     </div>
 
+    <!-- Download Format Modal -->
+    <div id="downloadModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md">
+        <h2 class="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+          <i data-feather="download" class="w-5 h-5"></i>
+          Download Processed Image
+        </h2>
+        <p class="text-gray-300 mb-4">Choose the format for your processed image:</p>
+        <div class="space-y-3 mb-6">
+          <button onclick="downloadImage('png')" 
+            class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-between">
+            <span>PNG Format</span>
+            <span class="text-xs text-gray-200">Lossless, larger file size</span>
+          </button>
+          <button onclick="downloadImage('jpg')" 
+            class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center justify-between">
+            <span>JPG Format</span>
+            <span class="text-xs text-gray-200">Compressed, smaller file size</span>
+          </button>
+          <button onclick="downloadImage('jpeg')" 
+            class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center justify-between">
+            <span>JPEG Format</span>
+            <span class="text-xs text-gray-200">Same as JPG</span>
+          </button>
+        </div>
+        <div class="flex justify-end">
+          <button onclick="hideDownloadModal()" 
+            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script>
       // Initialize Feather icons
       feather.replace();
@@ -230,6 +334,22 @@
       let currentBatchName = null;
       let selectedImageFile = null;
       let uploadedImages = [];
+      let currentProcessedImageId = null;
+
+      // Toast Notification Function
+      function showSuccessToast(message) {
+        const toast = document.getElementById("successToast");
+        const toastMessage = document.getElementById("toastMessage");
+        
+        toastMessage.textContent = message;
+        toast.classList.remove("hidden");
+        feather.replace();
+        
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+          toast.classList.add("hidden");
+        }, 3000);
+      }
 
       // Batch Management Functions
       function showBatchModal() {
@@ -275,6 +395,8 @@
 
           hideBatchModal();
           uploadedImages = [];
+          
+          showSuccessToast(`Batch "${name}" created successfully!`);
         } catch (error) {
           console.error("Error creating batch:", error);
           alert("Failed to create batch. Please try again.");
@@ -292,7 +414,7 @@
             name: file.name,
             size: file.size,
             url: URL.createObjectURL(file),
-            id: Date.now() + Math.random() // Temporary ID
+            id: Date.now() + Math.random()
           };
           uploadedImages.push(imageData);
         });
@@ -359,6 +481,7 @@
       function closeProcessingPanel() {
         document.getElementById("processingPanel").classList.add("hidden");
         selectedImageFile = null;
+        currentProcessedImageId = null;
       }
 
       // Processing Functions
@@ -414,6 +537,7 @@
           }
 
           const result = await response.json();
+          currentProcessedImageId = result.image_id;
           
           const resultsArea = document.getElementById("resultsArea");
           resultsArea.innerHTML = `
@@ -424,17 +548,64 @@
                   Filter Applied: ${filter}
                 </h4>
                 <img src="${result.image_data}" alt="Processed" class="w-full rounded-lg mb-3">
-                <div class="text-sm space-y-1">
+                <div class="text-sm space-y-1 mb-4">
                   <p><strong>Original:</strong> ${result.original_dimensions.formatted}</p>
                   <p><strong>Processed:</strong> ${result.processed_dimensions.formatted}</p>
                 </div>
+                <button onclick="showDownloadModal()" 
+                  class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                  <i data-feather="download" class="w-4 h-4"></i>
+                  Download Image
+                </button>
               </div>
             </div>
           `;
           feather.replace();
+          
+          showSuccessToast(`Filter "${filter}" applied successfully!`);
         } catch (error) {
           console.error("Error processing image:", error);
           alert("Failed to process image. Please try again.");
+        }
+      }
+
+      // Download Functions
+      function showDownloadModal() {
+        if (!currentProcessedImageId) {
+          alert("No processed image available for download.");
+          return;
+        }
+        document.getElementById("downloadModal").classList.remove("hidden");
+      }
+
+      function hideDownloadModal() {
+        document.getElementById("downloadModal").classList.add("hidden");
+      }
+
+      async function downloadImage(format) {
+        if (!currentProcessedImageId) {
+          alert("No processed image available for download.");
+          return;
+        }
+
+        try {
+          const downloadUrl = `http://127.0.0.1:8001/images/${currentProcessedImageId}/download?format=${format}`;
+          
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = `processed_${currentProcessedImageId}.${format}`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          hideDownloadModal();
+          
+          // Show success toast
+          showSuccessToast(`Image successfully downloaded as ${format.toUpperCase()}!`);
+          
+        } catch (error) {
+          console.error("Error downloading image:", error);
+          alert("Failed to download image. Please try again.");
         }
       }
 
@@ -465,7 +636,33 @@
           "add_rectangle": "Draws a rectangle on your image using cv2.rectangle().",
           "add_circle": "Draws a filled circle on your image using cv2.circle().",
           "add_polygon": "Draws a polygon shape on your image using cv2.polylines().",
-          "add_text": "Adds text overlay to your image using cv2.putText()."
+          "add_text": "Adds text overlay to your image using cv2.putText().",
+          "translate_right": "Shifts image 100 pixels to the right.",
+          "translate_down": "Shifts image 100 pixels downward.",
+          "rotate_45": "Rotates image 45 degrees clockwise.",
+          "rotate_90": "Rotates image 90 degrees clockwise.",
+          "flip_horizontal": "Flips image horizontally (mirror effect).",
+          "flip_vertical": "Flips image vertically (upside down).",
+          "resize_50": "Reduces image size to 50% of original dimensions.",
+          "resize_200": "Enlarges image to 200% of original dimensions.",
+          "crop_center": "Crops and extracts the center 50% of the image.",
+          "brighten": "Increases overall brightness by adding 50 to all pixels.",
+          "darken": "Decreases overall brightness by subtracting 50 from all pixels.",
+          "contrast": "Increases image contrast by multiplying pixel values by 1.5.",
+          "bitwise_not": "Inverts all colors (creates negative effect).",
+          "gaussian_blur": "Applies strong Gaussian blur for smooth effect.",
+          "median_blur": "Applies median blur to remove noise while preserving edges.",
+          "bilateral_filter": "Smooths image while preserving sharp edges.",
+          "sharpen": "Enhances edges and details using sharpening kernel.",
+          "threshold_binary": "Converts to binary image (black and white only).",
+          "threshold_otsu": "Automatic binary threshold using Otsu's method.",
+          "adaptive_threshold": "Adaptive thresholding for varying lighting conditions.",
+          "dilate": "Expands bright regions using morphological dilation.",
+          "erode": "Shrinks bright regions using morphological erosion.",
+          "morphological_gradient": "Shows edges by computing dilation minus erosion.",
+          "sobel_x": "Detects vertical edges using Sobel operator (X-direction).",
+          "sobel_y": "Detects horizontal edges using Sobel operator (Y-direction).",
+          "laplacian": "Detects all edges using Laplacian operator."
         };
         
         filterInfo.innerHTML = `<strong>Selected:</strong> ${filterDescriptions[selectedFilter] || "Select a filter to see description."}`;
