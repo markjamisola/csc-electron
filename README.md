@@ -5,8 +5,8 @@ A modern desktop application for image processing using **OpenCV**, **FastAPI**,
 ## 👥 Development Team
 
 - **Mark Jamisola** → `mark-dev` branch
-- **Albert** → `albert-dev` branch  
-- **Ushyne** → `ushyne-dev` branch
+- **Albert Agbo** → `albert-dev` branch  
+- **Ushyne Esclamado** → `ushyne-dev` branch
 
 **Course**: CSC 126 - CJ1 - GRAPHICS AND VISUAL COMPUTING 
 **Semester**: 1st Semester, 4th Year  
