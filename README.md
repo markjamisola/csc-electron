@@ -8,7 +8,7 @@ A modern desktop application for image processing using **OpenCV**, **FastAPI**,
 - **Albert Agbo** → `albert-dev` branch  
 - **Ushyne Esclamado** → `ushyne-dev` branch
 
-**Course**: CSC 126 - CJ1 - GRAPHICS AND VISUAL COMPUTING 
+**Course**: CSC 126 - CJ1 - GRAPHICS AND VISUAL COMPUTING
 **Semester**: 1st Semester, 4th Year  
 **Academic Year**: 2025
 
@@ -218,7 +218,7 @@ cd csc-electron
 
 ---
 
-## ⚠️ Important Notes for Your Team
+## ⚠️ Important Notes
 
 ### Every Time You Want to Run the Application:
 
