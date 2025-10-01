@@ -2,14 +2,41 @@
 
 A modern desktop application for image processing using **OpenCV**, **FastAPI**, and **Electron**. Built for CSC 126 Computer Vision coursework.
 
+## 👥 Development Team
+
+- **Mark Jamisola** → `mark-dev` branch
+- **Albert** → `albert-dev` branch  
+- **Ushyne** → `ushyne-dev` branch
+
+**Course**: CSC 126 - CJ1 - GRAPHICS AND VISUAL COMPUTING 
+**Semester**: 1st Semester, 4th Year  
+**Academic Year**: 2025
+
 ## ✨ Features
 
+### **🎨 Image Processing Operations**
 - **HSV Color Space Operations**: Blue, Green, Red channel isolation and full HSV conversion
 - **BGR Channel Operations**: Grayscale conversion, channel isolation, and enhancement (+100 boost)
+- **Basic Filters**: Grayscale, Canny edge detection, and Gaussian blur
 - **OpenCV Drawing Tools**: Add lines, rectangles, circles, polygons, and text to images
-- **Batch Management**: Create batches to organize and process multiple images
+
+### **📊 Advanced Image Analysis**
+- **Detailed Dimension Display**: Shows original and processed image dimensions
+- **File Size Information**: Displays file size for uploaded images
+- **Real-time Processing**: Instant filter application with dimension analysis
+- **Image Comparison**: Side-by-side original vs processed image display
+
+### **📁 Batch Management & Export**
+- **Batch Creation**: Create and organize multiple images into batches
+- **Batch Export**: Export entire batches as ZIP files for easy download
+- **Saved Batches View**: Dedicated interface to manage and view all saved batches
+- **Image Gallery**: Grid-based image display with batch organization
+
+### **💻 User Interface**
 - **Modern UI**: Clean, responsive desktop interface built with Electron and Tailwind CSS
-- **Real-time Processing**: Fast image processing with dimension analysis
+- **Enhanced Image Display**: Improved image viewing with dimension overlays
+- **Updated Dependencies**: Latest Axios (1.12.2) and Electron (38.1.2) versions
+- **Responsive Design**: Works seamlessly across different screen sizes
 
 ## 🛠 Technology Stack
 
@@ -351,14 +378,6 @@ The backend provides these REST API endpoints:
 
 ---
 
-## 👥 Development Team
-
-**Course**: CSC 126 - Computer Vision  
-**Semester**: 1st Semester, 4th Year  
-**Academic Year**: 2025
-
----
-
 ## 📞 Need Help?
 
 If you encounter any issues:
@@ -370,7 +389,6 @@ If you encounter any issues:
    - PostgreSQL container (`docker ps`)
    - Backend server (port 8001)
 4. **Check the console/terminal** for error messages
-5. **Ask your groupmates** or instructor for assistance
 
 ---
 
@@ -383,9 +401,3 @@ Once everything is set up, you should have:
 - ✅ All image processing features working
 
 **Happy image processing!** 📸✨
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Mac system files
-Icon?
