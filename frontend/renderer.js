@@ -1,3 +1,24 @@
+// Toast Notification Function
+function showSuccessToast(message) {
+  const toast = document.getElementById("successToast");
+  const toastMessage = document.getElementById("toastMessage");
+  
+  if (toast && toastMessage) {
+    toastMessage.textContent = message;
+    toast.classList.remove("hidden");
+    
+    // Refresh feather icons
+    if (typeof feather !== 'undefined') {
+      feather.replace();
+    }
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      toast.classList.add("hidden");
+    }, 3000);
+  }
+}
+
 async function processImage() {
   const fileInput = document.getElementById("fileInput");
   const operation = document.getElementById("operation").value;
@@ -68,7 +89,7 @@ async function processImage() {
 
       // Display image dimensions info
       const dimensionsDiv = document.createElement("div");
-      dimensionsDiv.className = "text-xs text-gray-300 mt-2 p-2 bg-gray-800 rounded";
+      dimensionsDiv.className = "text-xs text-gray-300 mt-2 p-2 bg-gray-800 rounded mb-3";
       dimensionsDiv.innerHTML = `
         <h4 class="text-green-400 font-semibold mb-1">Image Dimensions:</h4>
         <div class="mb-1"><strong>Original:</strong> ${result.original_dimensions.formatted}</div>
@@ -77,12 +98,51 @@ async function processImage() {
       `;
       processedContainer.appendChild(dimensionsDiv);
 
+      // Add download buttons
+      const downloadButtonsDiv = document.createElement("div");
+      downloadButtonsDiv.className = "flex gap-2 mb-4";
+      downloadButtonsDiv.innerHTML = `
+        <button onclick="downloadProcessedImage(${result.image_id}, 'png')" 
+          class="flex-1 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-xs">
+          Download PNG
+        </button>
+        <button onclick="downloadProcessedImage(${result.image_id}, 'jpg')" 
+          class="flex-1 px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition text-xs">
+          Download JPG
+        </button>
+      `;
+      processedContainer.appendChild(downloadButtonsDiv);
+
       // Refresh saved images after upload
       fetchAndDisplayImages();
+      
+      // Show success notification
+      showSuccessToast(`Image processed successfully with "${operation}" filter!`);
     } catch (err) {
       console.error("Processing error:", err);
       alert("Error processing image. Check console for details.");
     }
+  }
+}
+
+// Download function for processed images
+async function downloadProcessedImage(imageId, format) {
+  try {
+    const downloadUrl = `http://127.0.0.1:8001/images/${imageId}/download?format=${format}`;
+    
+    // Create a temporary link element and trigger download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `processed_${imageId}.${format}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Show success notification
+    showSuccessToast(`Image successfully downloaded as ${format.toUpperCase()}!`);
+  } catch (error) {
+    console.error("Error downloading image:", error);
+    alert("Failed to download image. Please try again.");
   }
 }
 
@@ -119,7 +179,17 @@ async function fetchAndDisplayImages() {
       const imgUrl = `http://127.0.0.1:8001/images/${img.id}/file`;
       batchDiv.innerHTML += `
         <div class="bg-gray-900 p-2 rounded-lg shadow hover:scale-105 transition">
-          <img src="${imgUrl}" class="max-w-[150px] max-h-[150px] mx-auto rounded-lg border border-gray-700" />
+          <img src="${imgUrl}" class="max-w-[150px] max-h-[150px] mx-auto rounded-lg border border-gray-700 mb-2" />
+          <div class="flex gap-1">
+            <button onclick="downloadProcessedImage(${img.id}, 'png')" 
+              class="flex-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-xs">
+              PNG
+            </button>
+            <button onclick="downloadProcessedImage(${img.id}, 'jpg')" 
+              class="flex-1 px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 transition text-xs">
+              JPG
+            </button>
+          </div>
         </div>
       `;
     });
